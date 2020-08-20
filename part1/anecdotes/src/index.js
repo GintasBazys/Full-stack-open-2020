@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom'
 
 const App = (props) => {
     const [selected, setSelected] = useState(0);
-    const [votes, setVotes] = useState({0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0})
+    const [votes, setVotes] = useState({})
+    const [mostVotes, setMostVotes] = useState(0);
 
     const {anecdotes} = props;
 
@@ -12,11 +13,19 @@ const App = (props) => {
     }
 
     const handleVoting = () => {
-        const copy = {...votes}
-        copy[selected] +=1;
-        setVotes(copy);
+        // const copy = {...votes}
+        // copy[selected] +=1;
+        // setVotes(copy);
+        const selectedVoteCount = votes[selected] || 0
+        setVotes({
+            ...votes,
+            [selected]: selectedVoteCount + 1
+        })
+        if (!votes[mostVotes] || selectedVoteCount + 1 > votes[mostVotes] ) {
+            setMostVotes(selected)
+        }
     }
-        let max = Object.keys(votes).reduce(function(a, b){ return votes[a] > votes[b] ? a : b });
+       // let max = Object.keys(votes).reduce(function(a, b){ return votes[a] > votes[b] ? a : b });
     return (
         <div>
             {anecdotes[selected]}
@@ -29,7 +38,7 @@ const App = (props) => {
             </div>
             <div>
                 <h1>Anecdote with the most votes</h1>
-                {anecdotes[max]}
+                {anecdotes[mostVotes]}
             </div>
         </div>
     )
