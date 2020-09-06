@@ -2,7 +2,7 @@ import React from "react";
 
 const Form = (props) => {
     return (
-        <form onSubmit={props.addPerson}>
+        <form onSubmit={props.addPerson }>
             <div>
                 name: <input value={props.newName} onChange={props.handleContact}/>
             </div>
@@ -16,4 +16,4 @@ const Form = (props) => {
     )
 }
 
-export default Form
+export default Form;

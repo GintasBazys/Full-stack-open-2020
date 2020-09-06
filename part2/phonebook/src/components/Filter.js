@@ -6,4 +6,4 @@ const Filter = ({handleFilter, search}) => {
     )
 }
 
-export default Filter
+export default Filter;

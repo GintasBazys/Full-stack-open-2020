@@ -1,20 +1,25 @@
-import React, {useState} from 'react';
-import './App.css';
+import React, {useEffect, useState} from 'react';
+import './index.css';
 import Filter from "./components/Filter";
 import Form from "./components/Form";
 import Persons from "./components/Persons";
+import personService from "./services/numbers";
+import Notification from "./components/Notification";
 
 const App = () => {
-    const [persons, setPersons] = useState([
-        { name: 'Arto Hellas', number: '040-123456' },
-        { name: 'Ada Lovelace', number: '39-44-5323523' },
-        { name: 'Dan Abramov', number: '12-43-234345' },
-        { name: 'Mary Poppendieck', number: '39-23-6423122' }
-    ])
-
+    const [persons, setPersons] = useState([])
     const [newName, setNewName] = useState("")
     const [newNumber, setNewNumber] = useState("")
     const [search, setSearch] = useState("")
+    const [errorMessage, setErrorMessage] = useState("")
+    const [color, setColor] = useState("green")
+
+    useEffect(() => {
+        personService.getAll()
+            .then(initialPersons => {
+                setPersons(initialPersons)
+            })
+    },[])
 
     const addPerson = (event) => {
         event.preventDefault()
@@ -23,10 +28,38 @@ const App = () => {
             number: newNumber
         }
         const person = persons.find(person => person.name === newName)
-        if(person !== undefined) {
+        const phoneNumber = persons.find(person => person.number === newNumber)
+        if(person !== undefined && phoneNumber !== undefined) {
             alert(`${person.name} is already added to phonebook`)
-        } else {
-            setPersons(persons.concat(nameObject))
+        } else if(phoneNumber === undefined && person !== undefined) {
+
+
+            if(window.confirm(`${person.name} already exists. Replace phone number?`)){
+                const changedPerson = {...person, number: newNumber}
+                personService.update(person.id, changedPerson)
+                    .then(updatedPerson => {
+                        setPersons(persons.map(p => p.id !== person.id ? p : updatedPerson))
+                        setErrorMessage(`Changed ${updatedPerson.name}'s phone number`)
+                        setColor("green")
+                        setTimeout(() => {
+                            setErrorMessage("")
+                            setColor("")
+                        }, 2000)
+                    })
+                }
+            }
+
+        else{
+            personService.add(nameObject)
+                .then(returnedPerson => {
+                    setPersons(persons.concat(returnedPerson))
+                    setErrorMessage(`Added ${returnedPerson.name}`)
+                    setColor("green")
+                    setTimeout(() => {
+                        setErrorMessage("")
+                        setColor("")
+                    }, 2000)
+                })
         }
 
         setNewName("")
@@ -53,11 +86,13 @@ const App = () => {
         <div>
             <div>
                 <h2>Phonebook</h2>
+                <Notification message={errorMessage} color={color} />
                 <Filter value={search} handleFilter={handleFilter} />
             </div>
+            <h1>add a new</h1>
             <Form addPerson={addPerson} newName={newName} newNumber={newNumber} handleContact={handleContact} handlePhoneNumber={handlePhoneNumber} />
             <h2>Numbers</h2>
-            <Persons persons={filteredPeopleByName}/>
+            <Persons persons={filteredPeopleByName} setPersons={setPersons} setMessage={setErrorMessage} />
         </div>
     )
 }
